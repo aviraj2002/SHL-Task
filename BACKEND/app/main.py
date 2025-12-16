@@ -7,15 +7,23 @@ from sentence_transformers import SentenceTransformer
 
 app = FastAPI(title="SHL Assessment Recommendation API")
 
-# Load FAISS index
-index = faiss.read_index("data/faiss.index")
+model = None
+index = None
+metadata = None
 
-# Load metadata
-with open("data/meta.json", "r", encoding="utf-8") as f:
-    metadata = json.load(f)
+def load_resources():
+    global model, index, metadata
 
-# Load embedding model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+    if index is None:
+        index = faiss.read_index("data/faiss.index")
+
+    if metadata is None:
+        with open("data/meta.json", "r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+    if model is None:
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 
 class QueryRequest(BaseModel):
@@ -29,6 +37,7 @@ def health():
 
 @app.post("/recommend")
 def recommend(req: QueryRequest):
+    load_resources()
     query_embedding = model.encode([req.query])
     query_embedding = np.array(query_embedding).astype("float32")
 

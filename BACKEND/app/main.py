@@ -4,12 +4,14 @@ import faiss
 import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import threading
 
 app = FastAPI(title="SHL Assessment Recommendation API")
 
 model = None
 index = None
 metadata = None
+
 
 def load_resources():
     global model, index, metadata
@@ -25,6 +27,11 @@ def load_resources():
         model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
+# 🔥 IMPORTANT: background warmup on startup
+@app.on_event("startup")
+def warmup():
+    threading.Thread(target=load_resources).start()
+
 
 class QueryRequest(BaseModel):
     query: str
@@ -38,6 +45,7 @@ def health():
 @app.post("/recommend")
 def recommend(req: QueryRequest):
     load_resources()
+
     query_embedding = model.encode([req.query])
     query_embedding = np.array(query_embedding).astype("float32")
 

@@ -8,10 +8,10 @@ from sentence_transformers import SentenceTransformer
 app = FastAPI(title="SHL Assessment Recommendation API")
 
 # Load FAISS index
-index = faiss.read_index("../data/faiss.index")
+index = faiss.read_index("data/faiss.index")
 
 # Load metadata
-with open("../data/meta.json", "r", encoding="utf-8") as f:
+with open("data/meta.json", "r", encoding="utf-8") as f:
     metadata = json.load(f)
 
 # Load embedding model
